@@ -29,9 +29,11 @@
     margin-right: auto;
   }
 
-  > ul > li.item-user:has(~ li.item-tagExpert),
-  > ul > li.item-canelaNames:has(~ li.item-tagExpert),
-  > ul > li.item-canelaUserTitle:has(~ li.item-tagExpert) {
+  // Classe repetida: as regras do tema têm a mesma especificidade e vêm
+  // depois no CSS.
+  > ul > li.item-user.item-user:has(~ li.item-tagExpert),
+  > ul > li.item-canelaNames.item-canelaNames:has(~ li.item-tagExpert),
+  > ul > li.item-canelaUserTitle.item-canelaUserTitle:has(~ li.item-tagExpert) {
     margin-right: 0;
   }
 }
@@ -44,7 +46,7 @@
     margin: 2px 0 0;
   }
 
-  .CanelaTopic .Post-header > ul > li.item-user:has(~ li.item-tagExpert) {
+  .CanelaTopic .Post-header > ul > li.item-user.item-user:has(~ li.item-tagExpert) {
     margin-right: auto;
   }
 }
@@ -52,6 +54,12 @@
 // Destaque discreto: só uma barra à esquerda, sem mexer no layout do post.
 .Post--tagExpert {
   box-shadow: inset 3px 0 0 var(--primary-color);
+}
+
+// Cartões do ramon/avocado: o círculo dos outros selos do tema.
+.AvocadoHome-badge--tagExpertReply {
+  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+  color: var(--primary-color);
 }
 
 .Badge--tagExpertReply {

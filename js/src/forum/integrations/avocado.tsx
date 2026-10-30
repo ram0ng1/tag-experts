@@ -42,13 +42,12 @@ export default function addAvocadoBadges() {
 
     const label = tText('forum.discussion.expert_reply_badge');
 
-    // Depois do último selo do tema, antes das tags.
+    // Depois dos selos do tema (fixada, trancada…) e antes das tags.
     const children = meta.children as unknown[];
-    const lastBadge = children.reduce<number>(
-      (last, child, index) => (findVnode(child, (node) => /AvocadoHome-badge\b/.test(node.attrs?.className || '')) ? index : last),
-      -1
-    );
-    const at = lastBadge >= 0 ? lastBadge + 1 : children.length;
+    const matches = (child: unknown, pattern: RegExp) => !!findVnode(child, (node) => pattern.test(node.attrs?.className || ''));
+    const lastBadge = children.reduce<number>((last, child, index) => (matches(child, /AvocadoHome-badge\b/) ? index : last), -1);
+    const firstTag = children.findIndex((child) => matches(child, /AvocadoHome-tagPill\b/));
+    const at = lastBadge >= 0 ? lastBadge + 1 : firstTag >= 0 ? firstTag : children.length;
 
     children.splice(
       at,
