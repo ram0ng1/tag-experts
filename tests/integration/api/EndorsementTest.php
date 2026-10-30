@@ -61,8 +61,9 @@ class EndorsementTest extends TagExpertsTestCase
 
         $this->assertEquals(422, $this->endorse(2, 6, 1)->getStatusCode());
 
-        $this->database()->table('tag_expert_endorsements')->update(['created_at' => Carbon::now()->subDays(2)]);
+        Carbon::setTestNow(Carbon::now()->addDays(2));
         $this->assertEquals(201, $this->endorse(2, 6, 1)->getStatusCode());
+        Carbon::setTestNow();
     }
 
     public function test_sem_permissao(): void

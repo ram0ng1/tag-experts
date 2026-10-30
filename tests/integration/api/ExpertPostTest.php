@@ -69,16 +69,20 @@ class ExpertPostTest extends TagExpertsTestCase
 
     public function test_trocar_os_grupos_da_tag_recalcula(): void
     {
+        $this->prepareDatabase([
+            'groups' => [['id' => 6, 'name_singular' => 'Professor', 'name_plural' => 'Professores', 'color' => null, 'icon' => null, 'is_hidden' => 0]],
+            'group_user' => [['user_id' => 4, 'group_id' => 6]],
+        ]);
         $this->reply(4, 1);
 
         $response = $this->send($this->request('PATCH', '/api/tags/1', [
             'authenticatedAs' => 1,
-            'json' => ['data' => ['type' => 'tags', 'id' => '1', 'attributes' => ['expertGroupIds' => [4]]]],
+            'json' => ['data' => ['type' => 'tags', 'id' => '1', 'attributes' => ['expertGroupIds' => [6]]]],
         ]));
 
         $this->assertEquals(200, $response->getStatusCode(), (string) $response->getBody());
-        $this->assertSame([4], $this->json($response)['data']['attributes']['expertGroupIds']);
-        // A moderação agora é especialista em PHP: a resposta dela conta.
+        $this->assertSame([6], $this->json($response)['data']['attributes']['expertGroupIds']);
+        // A moderadora agora é especialista em PHP: a resposta dela conta.
         $this->assertSame(2, $this->expertPostNumber(1));
     }
 
