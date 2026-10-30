@@ -47,7 +47,10 @@ return [
     (new Extend\Settings())
         ->default('ramon-tag-experts.endorsement_threshold', 3)
         ->default('ramon-tag-experts.endorsements_per_day', 3)
-        ->default('ramon-tag-experts.first_post_counts', false),
+        ->default('ramon-tag-experts.first_post_counts', false)
+        // label: ícone e texto; icon: só o ícone, com o texto na dica.
+        ->default('ramon-tag-experts.badge_style', 'label')
+        ->serializeToForum('tagExpertsBadgeStyle', 'ramon-tag-experts.badge_style'),
 
     (new Extend\Model(Tag::class))
         ->cast('accepts_expert_endorsements', 'boolean'),
