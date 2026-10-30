@@ -102,7 +102,7 @@ class HardeningTest extends TagExpertsTestCase
         $this->assertSame([], $this->groupsOfTag(2));
     }
 
-    public function test_desfazer_o_endosso_nao_devolve_a_vaga_do_dia(): void
+    public function test_desfazer_a_recomendacao_nao_devolve_a_vaga_do_dia(): void
     {
         $this->setting('ramon-tag-experts.endorsements_per_day', 1);
         $id = $this->json($this->endorse(2, 5, 1))['data']['id'];
@@ -112,7 +112,7 @@ class HardeningTest extends TagExpertsTestCase
         $this->assertEquals(422, $this->endorse(2, 6, 1)->getStatusCode());
     }
 
-    public function test_desfazer_o_endosso_tira_a_sugestao_pendente(): void
+    public function test_desfazer_a_recomendacao_tira_a_sugestao_pendente(): void
     {
         $this->setting('ramon-tag-experts.endorsement_threshold', 1);
         $id = $this->json($this->endorse(2, 5, 1))['data']['id'];

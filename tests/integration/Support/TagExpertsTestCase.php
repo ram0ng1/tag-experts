@@ -20,8 +20,8 @@ use Psr\Http\Message\ResponseInterface;
 
 /**
  * Base dos testes. Usuários: 1 admin, 2 `normal`, 3 `especialista`
- * (grupo 5, de especialistas da tag 1), 4 `moderadora`, 5 a 7 endossantes.
- * Tags: 1 aceita endossos e tem o grupo 5; 2 não tem especialistas.
+ * (grupo 5, de especialistas da tag 1), 4 `moderadora`, 5 a 7 recomendam.
+ * Tags: 1 aceita recomendações e tem o grupo 5; 2 não tem especialistas.
  */
 abstract class TagExpertsTestCase extends TestCase
 {

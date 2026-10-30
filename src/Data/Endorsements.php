@@ -16,7 +16,7 @@ use Ramon\TagExperts\TagExpertEndorsement;
 use Ramon\TagExperts\TagExpertSuggestion;
 
 /**
- * Endossos dados e recebidos, no flarum/gdpr.
+ * Recomendações feitas e recebidas, e sugestões de especialista, no flarum/gdpr.
  */
 class Endorsements extends Type
 {

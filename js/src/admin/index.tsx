@@ -55,7 +55,7 @@ app.initializers.add('ramon-tag-experts', () => {
       <div className="Form-group">
         <label className="checkbox">
           <input type="checkbox" bidi={this.tagExpertEndorsements} />
-          {t('admin.edit_tag.accepts_endorsements_label')}
+          {t('admin.edit_tag.accepts_recommendations_label')}
         </label>
       </div>,
       6

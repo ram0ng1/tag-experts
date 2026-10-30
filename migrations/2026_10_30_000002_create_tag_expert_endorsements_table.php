@@ -15,7 +15,7 @@ use Illuminate\Database\Schema\Blueprint;
 return Migration::createTable('tag_expert_endorsements', function (Blueprint $table) {
     $table->increments('id');
     $table->unsignedInteger('tag_id');
-    // Quem recebe e quem dá o endosso.
+    // Quem recebe e quem faz a recomendação.
     $table->unsignedInteger('user_id');
     $table->unsignedInteger('endorser_id');
     $table->dateTime('created_at');
@@ -24,7 +24,7 @@ return Migration::createTable('tag_expert_endorsements', function (Blueprint $ta
     // de tabela maiores que "flarum_". Com o prefixo, para não colidir no
     // PostgreSQL, onde o nome do índice vale para o schema inteiro.
     $table->unique(['tag_id', 'user_id', 'endorser_id'], $table->getPrefix().'tag_expert_endorsements_unique');
-    // Limite diário por quem endossa.
+    // Limite diário de quem recomenda.
     $table->index(['endorser_id', 'created_at']);
     $table->foreign('tag_id')->references('id')->on('tags')->cascadeOnDelete();
     $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();

@@ -29,7 +29,7 @@ use Ramon\TagExperts\TagExpertSuggestion;
 use Tobyz\JsonApiServer\Context as OriginalContext;
 
 /**
- * Endossos que o membro logado deu. Ninguém vê os endossos dos outros: o
+ * Recomendações (endorsements) que o usuário logado fez. Ninguém vê as dos outros: o
  * que fica público é só o resultado, depois da revisão.
  *
  * @extends AbstractDatabaseResource<TagExpertEndorsement>
@@ -118,7 +118,7 @@ class EndorsementResource extends AbstractDatabaseResource
             $fail('already_expert');
         }
         if (TagExpertEndorsement::query()->where(['tag_id' => $tag->id, 'user_id' => $user->id, 'endorser_id' => $model->endorser_id])->exists()) {
-            $fail('already_endorsed');
+            $fail('already_recommended');
         }
 
         $perDay = max(1, (int) $this->settings->get('ramon-tag-experts.endorsements_per_day', 3));
@@ -127,8 +127,8 @@ class EndorsementResource extends AbstractDatabaseResource
             ->where('created_at', '>', Carbon::now()->subDay())
             ->count();
 
-        // Desfazer um endosso não devolve a vaga do dia: senão endossar,
-        // desfazer e endossar de novo passaria do limite.
+        // Desfazer uma recomendação não devolve a vaga do dia: senão recomendar,
+        // desfazer e recomendar de novo passaria do limite.
         if (max($today, count($this->recentEndorsements((int) $model->endorser_id))) >= $perDay) {
             $fail('limit_reached', ['{max}' => $perDay]);
         }
@@ -143,7 +143,7 @@ class EndorsementResource extends AbstractDatabaseResource
         $count = TagExpertEndorsement::query()->where(['tag_id' => $model->tag_id, 'user_id' => $model->user_id])->count();
 
         // Uma sugestão por pessoa e tag: dispensada não volta sozinha.
-        // insertOrIgnore: dois endossos ao mesmo tempo não esbarram no índice único.
+        // insertOrIgnore: duas recomendações ao mesmo tempo não esbarram no índice único.
         if ($count >= $threshold) {
             TagExpertSuggestion::query()->insertOrIgnore([
                 'tag_id' => $model->tag_id,
@@ -164,7 +164,7 @@ class EndorsementResource extends AbstractDatabaseResource
         /** @var TagExpertEndorsement $model */
         parent::delete($model, $context);
 
-        // Sem endossos suficientes, a sugestão ainda não revisada sai da fila.
+        // Sem recomendações suficientes, a sugestão ainda não revisada sai da fila.
         $threshold = max(1, (int) $this->settings->get('ramon-tag-experts.endorsement_threshold', 3));
         $where = ['tag_id' => $model->tag_id, 'user_id' => $model->user_id];
 
@@ -174,7 +174,7 @@ class EndorsementResource extends AbstractDatabaseResource
     }
 
     /**
-     * Horários dos endossos das últimas 24 horas, incluindo os desfeitos.
+     * Horários das recomendações das últimas 24 horas, incluindo as desfeitas.
      *
      * @return list<int>
      */

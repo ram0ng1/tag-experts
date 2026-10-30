@@ -11,6 +11,17 @@ export default [
 
   new Extend.Admin()
     .setting(() => ({
+      setting: 'ramon-tag-experts.badge_style',
+      type: 'select',
+      options: {
+        label: t('admin.settings.badge_style_options.label'),
+        icon: t('admin.settings.badge_style_options.icon'),
+      },
+      default: 'label',
+      label: t('admin.settings.badge_style_label'),
+      help: t('admin.settings.badge_style_help'),
+    }))
+    .setting(() => ({
       setting: 'ramon-tag-experts.endorsement_threshold',
       type: 'number',
       min: 1,
@@ -41,7 +52,7 @@ export default [
     .permission(
       () => ({
         icon: 'fas fa-user-graduate',
-        label: t('admin.permissions.endorse_label'),
+        label: t('admin.permissions.recommend_label'),
         permission: 'tagExperts.endorse',
       }),
       'reply'

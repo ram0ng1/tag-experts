@@ -12,7 +12,7 @@
 use Flarum\Database\Migration;
 use Illuminate\Database\Schema\Blueprint;
 
-// Membro que atingiu o número de endossos numa tag, esperando revisão.
+// Usuário que atingiu o número de recomendações numa tag, esperando revisão.
 return Migration::createTable('tag_expert_suggestions', function (Blueprint $table) {
     $table->increments('id');
     $table->unsignedInteger('tag_id');

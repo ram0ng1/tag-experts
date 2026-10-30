@@ -15,7 +15,7 @@ import type ItemList from 'flarum/common/utils/ItemList';
 import type Mithril from 'mithril';
 import type Tag from 'ext:flarum/tags/common/models/Tag';
 
-import EndorseModal from './components/EndorseModal';
+import RecommendModal from './components/RecommendModal';
 import addAvocadoBadges from './integrations/avocado';
 import { expertTags, t, tText } from '../common/utils/experts';
 
@@ -37,13 +37,17 @@ app.initializers.add('ramon-tag-experts', () => {
     if (!tags.length) return;
 
     const tooltip = tText('forum.post.expert_tooltip', { tags: tags.map((tag) => tag.name()).join(', ') });
+    // Só o ícone, se o admin preferir; o texto continua na dica e no aria-label.
+    const iconOnly = app.forum.attribute<string>('tagExpertsBadgeStyle') === 'icon';
 
+    // Prioridade logo abaixo do nome (100): fica à direita dele no core, no
+    // Canela e no Avocado.
     items.add(
       'tagExpert',
       <Tooltip text={tooltip}>
-        <span className="TagExpertBadge" tabindex="0" aria-label={tooltip}>
+        <span className={classList('TagExpertBadge', { 'TagExpertBadge--icon': iconOnly })} tabindex="0" aria-label={tooltip}>
           <i className="fas fa-user-graduate" aria-hidden="true" />
-          <span className="TagExpertBadge-label">{t('forum.post.expert_badge')}</span>
+          {!iconOnly && <span className="TagExpertBadge-label">{t('forum.post.expert_badge')}</span>}
         </span>
       </Tooltip>,
       90
@@ -74,9 +78,9 @@ app.initializers.add('ramon-tag-experts', () => {
     if (!actor || actor === user || !app.forum.attribute<boolean>('canEndorseTagExperts')) return;
 
     items.add(
-      'tagExpertEndorse',
-      <Button icon="fas fa-user-graduate" onclick={() => app.modal.show(EndorseModal, { user })}>
-        {t('forum.user_controls.endorse_button')}
+      'tagExpertRecommend',
+      <Button icon="fas fa-user-graduate" onclick={() => app.modal.show(RecommendModal, { user })}>
+        {t('forum.user_controls.recommend_button')}
       </Button>
     );
   });

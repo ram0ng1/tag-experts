@@ -17,7 +17,7 @@ use Flarum\Search\SearchState;
 use Flarum\Search\ValidateFilterTrait;
 
 /**
- * `filter[user]`: os endossos dados a um membro (o modal só precisa desses).
+ * `filter[user]`: as recomendações feitas a um usuário (o modal só precisa delas).
  *
  * @implements FilterInterface<DatabaseSearchState>
  */

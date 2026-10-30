@@ -16,11 +16,11 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Ramon\TagExperts\Tests\integration\Support\TagExpertsTestCase;
 
 /**
- * Endossos: quem pode, quantas vezes e quando viram sugestão.
+ * Recomendações: quem pode, quantas vezes e quando viram sugestão.
  */
 class EndorsementTest extends TagExpertsTestCase
 {
-    public function test_membro_endossa_e_ve_so_os_proprios(): void
+    public function test_usuario_recomenda_e_ve_so_as_proprias(): void
     {
         $response = $this->endorse(2, 5, 1);
         $this->assertEquals(201, $response->getStatusCode(), (string) $response->getBody());
@@ -36,7 +36,7 @@ class EndorsementTest extends TagExpertsTestCase
     {
         return [
             'a si mesmo'          => [2, 2, 1],
-            'tag sem endossos'    => [2, 5, 2],
+            'tag sem recomendações'    => [2, 5, 2],
             'já é especialista'   => [2, 3, 1],
         ];
     }
@@ -47,7 +47,7 @@ class EndorsementTest extends TagExpertsTestCase
         $this->assertEquals(422, $this->endorse($endorser, $user, $tag)->getStatusCode());
     }
 
-    public function test_recusa_endosso_repetido(): void
+    public function test_recusa_recomendacao_repetida(): void
     {
         $this->endorse(2, 5, 1);
 
@@ -73,7 +73,7 @@ class EndorsementTest extends TagExpertsTestCase
         $this->assertEquals(403, $this->endorse(2, 5, 1)->getStatusCode());
     }
 
-    public function test_visitante_nao_endossa_nem_lista(): void
+    public function test_visitante_nao_recomenda_nem_lista(): void
     {
         $this->assertEquals(401, $this->send($this->request('GET', '/api/tag-expert-endorsements'))->getStatusCode());
     }

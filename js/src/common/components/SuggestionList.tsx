@@ -14,7 +14,7 @@ import type Suggestion from '../models/Suggestion';
 import { expertGroupIds, t, tText } from '../utils/experts';
 
 /**
- * A fila de sugestões de especialistas: quem recebeu endossos suficientes
+ * A fila de sugestões de especialistas: quem recebeu recomendações suficientes
  * numa tag. A mesma lista serve ao admin e à página da moderação no fórum.
  */
 export default class SuggestionList extends Component {
@@ -44,7 +44,7 @@ export default class SuggestionList extends Component {
         <ul className="TagExpertSuggestions-list">{this.suggestions.map((suggestion) => this.item(suggestion))}</ul>
         {this.moreResults && (
           <Button className="Button" loading={this.loading} onclick={() => this.load(this.suggestions.length)}>
-            {t('lib.suggestions.load_more')}
+            {t('lib.suggestions.load_more_button')}
           </Button>
         )}
       </div>
@@ -69,7 +69,7 @@ export default class SuggestionList extends Component {
             <span className="TagExpertSuggestion-meta">
               {tag ? t('lib.suggestions.in_tag', { tag: tagLabel(tag) }) : null}
               {' · '}
-              {t('lib.suggestions.endorsements', { count: suggestion.endorsementCount() })}
+              {t('lib.suggestions.recommendations', { count: suggestion.endorsementCount() })}
             </span>
           </div>
         </div>
@@ -92,10 +92,10 @@ export default class SuggestionList extends Component {
             title={!groups.length ? tText('lib.suggestions.no_group') : undefined}
             onclick={() => this.resolve(suggestion, 'approved', groups)}
           >
-            {t('lib.suggestions.approve')}
+            {t('lib.suggestions.approve_button')}
           </Button>
           <Button className="Button" icon="fas fa-times" disabled={this.busy[id]} onclick={() => this.resolve(suggestion, 'dismissed', groups)}>
-            {t('lib.suggestions.dismiss')}
+            {t('lib.suggestions.dismiss_button')}
           </Button>
         </div>
       </li>
@@ -147,8 +147,8 @@ export default class SuggestionList extends Component {
       app.alerts.show(
         { type: 'success' },
         status === 'approved'
-          ? t('lib.suggestions.approved', { username: user ? user.displayName() : '', tag: tag ? tag.name() : '' })
-          : t('lib.suggestions.dismissed')
+          ? t('lib.suggestions.approved_message', { username: user ? user.displayName() : '', tag: tag ? tag.name() : '' })
+          : t('lib.suggestions.dismissed_message')
       );
     } finally {
       this.busy[id] = false;

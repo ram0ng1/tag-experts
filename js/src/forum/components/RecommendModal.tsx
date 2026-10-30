@@ -12,32 +12,33 @@ import type Tag from 'ext:flarum/tags/common/models/Tag';
 import type Endorsement from '../../common/models/Endorsement';
 import { expertTags, t } from '../../common/utils/experts';
 
-export interface EndorseModalAttrs extends IFormModalAttrs {
+export interface RecommendModalAttrs extends IFormModalAttrs {
   user: User;
 }
 
 /**
- * Marca as tags em que a pessoa manda bem. Desmarcar apaga o endosso; os
- * endossos são privados, então só aparecem os de quem está logado.
+ * Marca as tags em que a pessoa manda bem. Desmarcar exclui a recomendação;
+ * as recomendações são privadas, então só aparecem as de quem está logado.
+ * (Internamente, na API e no banco, recomendação se chama "endorsement".)
  */
-export default class EndorseModal extends FormModal<EndorseModalAttrs> {
+export default class RecommendModal extends FormModal<RecommendModalAttrs> {
   tags: Tag[] = [];
   existing: Record<string, Endorsement> = {};
   selected: Set<string> = new Set();
   ready = false;
 
-  oninit(vnode: Mithril.Vnode<EndorseModalAttrs, this>) {
+  oninit(vnode: Mithril.Vnode<RecommendModalAttrs, this>) {
     super.oninit(vnode);
 
     this.load();
   }
 
   className() {
-    return 'TagExpertEndorseModal Modal--small';
+    return 'TagExpertRecommendModal Modal--small';
   }
 
   title() {
-    return t('forum.endorse_modal.title', { username: this.attrs.user.displayName() });
+    return t('forum.recommend_modal.title', { username: this.attrs.user.displayName() });
   }
 
   content() {
@@ -53,8 +54,8 @@ export default class EndorseModal extends FormModal<EndorseModalAttrs> {
       <div className="Modal-body">
         {this.tags.length ? (
           <Form>
-            <p className="helpText">{t('forum.endorse_modal.text')}</p>
-            <div className="Form-group TagExpertEndorseModal-tags">
+            <p className="helpText">{t('forum.recommend_modal.text')}</p>
+            <div className="Form-group TagExpertRecommendModal-tags">
               {this.tags.map((tag) => {
                 const id = tag.id()!;
 
@@ -65,7 +66,7 @@ export default class EndorseModal extends FormModal<EndorseModalAttrs> {
                       checked={this.selected.has(id)}
                       onchange={(e: Event) => this.toggle(id, (e.target as HTMLInputElement).checked)}
                     />
-                    {tagIcon(tag, { className: 'TagExpertEndorseModal-icon' })}
+                    {tagIcon(tag, { className: 'TagExpertRecommendModal-icon' })}
                     {tag.name()}
                   </label>
                 );
@@ -73,12 +74,12 @@ export default class EndorseModal extends FormModal<EndorseModalAttrs> {
             </div>
             <div className="Form-group Form-controls">
               <Button type="submit" className="Button Button--primary" loading={this.loading}>
-                {t('forum.endorse_modal.submit')}
+                {t('forum.recommend_modal.submit_button')}
               </Button>
             </div>
           </Form>
         ) : (
-          <p className="helpText">{t('forum.endorse_modal.no_tags')}</p>
+          <p className="helpText">{t('forum.recommend_modal.no_tags')}</p>
         )}
       </div>
     );
@@ -92,7 +93,7 @@ export default class EndorseModal extends FormModal<EndorseModalAttrs> {
       app.store.find<Endorsement[]>('tag-expert-endorsements', { filter: { user: user.id()! } }),
     ]);
 
-    // Quem já é especialista na tag não precisa de endosso nela.
+    // Quem já é especialista na tag não precisa de recomendação nela.
     const expertIn = new Set(expertTags(user, tags).map((tag) => tag.id()));
 
     this.tags = sortTags(tags.filter((tag) => tag.attribute<boolean>('acceptsExpertEndorsements') && !expertIn.has(tag.id())));
@@ -134,7 +135,7 @@ export default class EndorseModal extends FormModal<EndorseModalAttrs> {
       }
 
       this.hide();
-      app.alerts.show({ type: 'success' }, t('forum.endorse_modal.saved'));
+      app.alerts.show({ type: 'success' }, t('forum.recommend_modal.saved_message'));
     } catch (error) {
       this.loading = false;
       m.redraw();

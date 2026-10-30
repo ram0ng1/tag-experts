@@ -15,7 +15,7 @@ use Ramon\TagExperts\Tests\integration\Support\TagExpertsTestCase;
 
 class TagFieldsTest extends TagExpertsTestCase
 {
-    public function test_visitante_ve_os_grupos_e_os_endossos(): void
+    public function test_visitante_ve_os_grupos_e_as_recomendacoes(): void
     {
         $tags = $this->json($this->send($this->request('GET', '/api/tags')))['data'];
         $php = collect($tags)->firstWhere('id', '1')['attributes'];

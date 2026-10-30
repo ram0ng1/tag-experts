@@ -18,7 +18,7 @@ use Flarum\User\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Membro que juntou endossos suficientes numa tag e espera a revisão.
+ * Usuário que juntou recomendações suficientes numa tag e espera a revisão.
  *
  * @property int $id
  * @property int $tag_id

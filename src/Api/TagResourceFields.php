@@ -22,7 +22,7 @@ use Ramon\TagExperts\ExpertResolver;
 use Ramon\TagExperts\Job\RecalculateExpertPosts;
 
 /**
- * Grupos de especialistas e endossos, na edição da tag. Públicos: o fórum
+ * Grupos de especialistas e recomendações, na edição da tag. Públicos: o fórum
  * usa os grupos para marcar as respostas de especialista sem perguntar ao
  * servidor post a post.
  */
