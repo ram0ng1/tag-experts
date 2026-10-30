@@ -1,0 +1,43 @@
+// Selo de especialista ao lado do nome, nas cores do tema (core, Canela e
+// Avocado definem --primary-color).
+.TagExpertBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+  vertical-align: middle;
+  color: var(--primary-color);
+  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+  cursor: default;
+
+  .fa-user-graduate {
+    font-size: 10px;
+  }
+}
+
+// Destaque discreto: só uma barra à esquerda, sem mexer no layout do post.
+.Post--tagExpert {
+  box-shadow: inset 3px 0 0 var(--primary-color);
+}
+
+.Badge--tagExpertReply {
+  --badge-bg: var(--primary-color);
+}
+
+
+@import 'common.less';
+
+.TagExpertSuggestionsPage-title {
+  margin-top: 0;
+}
+
+.TagExpertEndorseModal-tags .checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
