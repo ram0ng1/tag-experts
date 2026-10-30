@@ -4,7 +4,9 @@ Recognise the members who know a tag best on your Flarum 2 forum. Inspired by
 Discourse's [category experts plugin](https://github.com/discourse/discourse-category-experts).
 
 - **Expert groups per tag**: in **Tags → edit tag**, pick the groups whose
-  members are experts in that tag (Guests and Members can't be picked).
+  members are experts in that tag. Guests and Members can't be picked, and
+  neither can Admins, Mods or hidden groups: approving a suggestion adds the
+  member to the group, and a badge would reveal who is in a hidden group.
 - **Expert replies stand out**: their posts get an *Expert* badge next to the
   name and a thin accent bar, in any discussion tagged with that tag.
 - **"Has an expert reply" badge**: discussions answered by an expert show a

@@ -28,6 +28,8 @@ use Ramon\TagExperts\Job\RecalculateExpertPosts;
  */
 class TagResourceFields
 {
+    public const MAX_GROUPS = 50;
+
     public function __construct(
         protected ExpertGroups $groups,
         protected ConnectionInterface $db,
@@ -48,14 +50,21 @@ class TagResourceFields
                 ->get(fn (Tag $tag, Context $context) => $this->groups->forTag($context->request, (int) $tag->id))
                 ->writable($canEdit)
                 ->rule(fn () => function (string $attribute, mixed $value, \Closure $fail) {
-                    if (! is_array($value) || array_filter($value, fn ($id) => ! is_int($id) && ! ctype_digit((string) $id))) {
+                    $valid = is_array($value) && array_is_list($value) && count($value) <= self::MAX_GROUPS;
+
+                    if (! $valid || array_filter($value, fn ($id) => filter_var($id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) === false)) {
                         $fail('Invalid groups.');
                     }
                 })
                 ->set(function (Tag $tag, array $value) {
-                    // Visitantes e Membros não entram: seriam todo mundo, e o grupo
-                    // Membros nem fica no group_user.
-                    $ids = Group::query()->whereIn('id', array_map('intval', $value))->whereNotIn('id', [Group::GUEST_ID, Group::MEMBER_ID])->pluck('id')->all();
+                    // Só grupos que podem ser de especialistas (ExpertGroups::INELIGIBLE,
+                    // e nada de grupo oculto); os outros são ignorados.
+                    $ids = Group::query()
+                        ->whereIn('id', array_map('intval', $value))
+                        ->whereNotIn('id', ExpertGroups::INELIGIBLE)
+                        ->where('is_hidden', false)
+                        ->pluck('id')
+                        ->all();
 
                     $tag->afterSave(function (Tag $tag) use ($ids) {
                         $this->db->table('tag_expert_groups')->where('tag_id', $tag->id)->delete();

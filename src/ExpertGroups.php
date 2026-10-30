@@ -11,7 +11,7 @@
 
 namespace Ramon\TagExperts;
 
-use Illuminate\Database\ConnectionInterface;
+use Flarum\Group\Group;
 use Psr\Http\Message\ServerRequestInterface;
 use WeakMap;
 
@@ -22,11 +22,17 @@ use WeakMap;
  */
 class ExpertGroups
 {
+    /**
+     * Grupos que nunca são de especialistas: Visitantes e Membros seriam todo
+     * mundo, Admins e Mods dariam poder de equipe a quem for aprovado.
+     */
+    public const INELIGIBLE = [Group::ADMINISTRATOR_ID, Group::GUEST_ID, Group::MEMBER_ID, Group::MODERATOR_ID];
+
     /** @var WeakMap<ServerRequestInterface, array<int, list<int>>> */
     private WeakMap $cache;
 
     public function __construct(
-        protected ConnectionInterface $db
+        protected ExpertResolver $resolver
     ) {
         $this->cache = new WeakMap();
     }
@@ -38,7 +44,7 @@ class ExpertGroups
     {
         if (! isset($this->cache[$request])) {
             $map = [];
-            foreach ($this->db->table('tag_expert_groups')->get(['tag_id', 'group_id']) as $row) {
+            foreach ($this->resolver->expertGroupRows()->get(['tag_expert_groups.tag_id', 'tag_expert_groups.group_id']) as $row) {
                 $map[(int) $row->tag_id][] = (int) $row->group_id;
             }
             $this->cache[$request] = $map;

@@ -17,6 +17,7 @@ use Flarum\Post\Post;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 
 /**
  * Quem é especialista onde, e qual a primeira resposta de especialista de
@@ -46,11 +47,50 @@ class ExpertResolver
     {
         $out = [];
 
-        foreach ($this->db->table('tag_expert_groups')->whereIn('tag_id', $tagIds)->get(['tag_id', 'group_id']) as $row) {
+        foreach ($this->expertGroupRows()->whereIn('tag_expert_groups.tag_id', $tagIds)->get(['tag_expert_groups.tag_id', 'tag_expert_groups.group_id']) as $row) {
             $out[(int) $row->tag_id][] = (int) $row->group_id;
         }
 
         return $out;
+    }
+
+    /**
+     * Grupos de especialistas que valem. Admins e Mods ficam de fora (aprovar
+     * uma sugestão põe a pessoa no grupo: seria promover alguém à equipe) e os
+     * grupos ocultos também (o selo revelaria quem está neles). Uma linha que
+     * sobrou de antes de o grupo ficar oculto é ignorada.
+     */
+    public function expertGroupRows(): QueryBuilder
+    {
+        return $this->db->table('tag_expert_groups')
+            ->join('groups', 'groups.id', '=', 'tag_expert_groups.group_id')
+            ->where('groups.is_hidden', false)
+            ->whereNotIn('groups.id', ExpertGroups::INELIGIBLE);
+    }
+
+    /**
+     * Discussões das tags que têm grupos de especialistas.
+     *
+     * @return list<int>
+     */
+    public function discussionsWithExperts(): array
+    {
+        return $this->discussionsInTags($this->db->table('tag_expert_groups')->distinct()->pluck('tag_id')->map(fn ($id) => (int) $id)->all());
+    }
+
+    /**
+     * Discussões cuja resposta de especialista é de alguém: as que mudam
+     * quando a pessoa sai.
+     *
+     * @return list<int>
+     */
+    public function discussionsAnsweredBy(int $userId): array
+    {
+        return Discussion::query()
+            ->whereIn('expert_post_id', fn ($query) => $query->select('id')->from('posts')->where('user_id', $userId))
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
     }
 
     /**
@@ -132,7 +172,13 @@ class ExpertResolver
             ->whereExists(fn ($query) => $query
                 ->selectRaw('1')
                 ->from('group_user')
+                // Autor que ainda existe: sem chave estrangeira (SQLite sem
+                // foreign_keys), o group_user de quem foi excluído fica para trás.
+                ->join('users', 'users.id', '=', 'group_user.user_id')
                 ->join('tag_expert_groups', 'tag_expert_groups.group_id', '=', 'group_user.group_id')
+                ->join('groups', 'groups.id', '=', 'tag_expert_groups.group_id')
+                ->where('groups.is_hidden', false)
+                ->whereNotIn('groups.id', ExpertGroups::INELIGIBLE)
                 ->join('discussion_tag', 'discussion_tag.tag_id', '=', 'tag_expert_groups.tag_id')
                 ->whereColumn('group_user.user_id', 'posts.user_id')
                 ->whereColumn('discussion_tag.discussion_id', 'posts.discussion_id'));

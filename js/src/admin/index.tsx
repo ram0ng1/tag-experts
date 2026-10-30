@@ -19,8 +19,12 @@ app.initializers.add('ramon-tag-experts', () => {
 
   // Logo antes da ordenação padrão, junto das outras opções da tag.
   extend(MODAL, 'fields', function (this: any, items: ItemList<Mithril.Children>) {
-    // Visitantes e Membros seriam todo mundo; o servidor também os recusa.
-    const groups = app.store.all<Group>('groups').filter((group) => ![Group.GUEST_ID, Group.MEMBER_ID].includes(group.id()!));
+    // Os mesmos que o servidor aceita: Visitantes e Membros seriam todo mundo,
+    // Admins e Mods dariam poder de equipe a quem for aprovado, e o selo
+    // revelaria quem está num grupo oculto. O JS do core não tem a constante
+    // dos Mods (4).
+    const ineligible = [Group.ADMINISTRATOR_ID, Group.GUEST_ID, Group.MEMBER_ID, '4'];
+    const groups = app.store.all<Group>('groups').filter((group) => !ineligible.includes(group.id()!) && !group.isHidden());
     const selected: string[] = this.tagExpertGroups();
 
     const toggle = (id: string, checked: boolean) => {

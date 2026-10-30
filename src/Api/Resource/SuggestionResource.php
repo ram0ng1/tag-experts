@@ -20,6 +20,7 @@ use Flarum\Api\Sort\SortColumn;
 use Flarum\Foundation\ValidationException;
 use Flarum\Locale\TranslatorInterface;
 use Flarum\Notification\NotificationSyncer;
+use Flarum\Tags\Tag;
 use Flarum\User\Event\GroupsChanged;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Eloquent\Builder;
@@ -68,6 +69,9 @@ class SuggestionResource extends AbstractDatabaseResource
         if ($context instanceof Context && $context->listing(self::class)) {
             $query->where('status', TagExpertSuggestion::PENDING);
         }
+
+        // Tag restrita que a moderação não enxerga também não entra na fila.
+        $query->whereIn('tag_id', Tag::query()->whereVisibleTo($context->getActor())->select('tags.id'));
     }
 
     public function endpoints(): array
@@ -119,19 +123,21 @@ class SuggestionResource extends AbstractDatabaseResource
         /** @var TagExpertSuggestion $model */
         // Grupo escolhido na aprovação, quando a tag tem mais de um; vai no meta.
         $groupId = $context->body()['meta']['groupId'] ?? null;
+        $alreadyResolved = fn () => new ValidationException(['status' => $this->translator->trans('ramon-tag-experts.api.already_resolved')]);
 
         if ($model->getOriginal('status') !== TagExpertSuggestion::PENDING) {
-            throw new ValidationException(['status' => $this->translator->trans('ramon-tag-experts.api.already_resolved')]);
+            throw $alreadyResolved();
         }
 
         $model->resolved_at = Carbon::now();
         $model->resolved_by_id = (int) $context->getActor()->id;
 
         if ($model->status === TagExpertSuggestion::APPROVED) {
+            // Só os grupos que valem (sem Admins, Mods nem ocultos).
             $groups = $this->resolver->expertGroupsByTag([(int) $model->tag_id])[(int) $model->tag_id] ?? [];
-            $group = $groupId !== null ? (int) $groupId : ($groups[0] ?? null);
+            $group = $groupId !== null ? filter_var($groupId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) : ($groups[0] ?? null);
 
-            if ($group === null || ! in_array($group, $groups, true)) {
+            if (! is_int($group) || ! in_array($group, $groups, true)) {
                 throw new ValidationException(['groupId' => $this->translator->trans('ramon-tag-experts.api.no_expert_group')]);
             }
 
@@ -144,6 +150,17 @@ class SuggestionResource extends AbstractDatabaseResource
                 $this->events->dispatch(new GroupsChanged($user, $old, $context->getActor()));
                 $this->notifications->sync(new BecameExpertBlueprint($suggestion->tag), [$user]);
             });
+        }
+
+        // Duas revisões ao mesmo tempo: só a que tirar a sugestão de "pendente"
+        // segue (senão a pessoa entraria no grupo e seria avisada duas vezes).
+        $claimed = TagExpertSuggestion::query()
+            ->whereKey($model->id)
+            ->where('status', TagExpertSuggestion::PENDING)
+            ->update(['status' => $model->status, 'resolved_at' => $model->resolved_at, 'resolved_by_id' => $model->resolved_by_id]);
+
+        if ($claimed === 0) {
+            throw $alreadyResolved();
         }
 
         return parent::updating($model, $context);
