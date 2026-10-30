@@ -20,7 +20,10 @@ return Migration::createTable('tag_expert_endorsements', function (Blueprint $ta
     $table->unsignedInteger('endorser_id');
     $table->dateTime('created_at');
 
-    $table->unique(['tag_id', 'user_id', 'endorser_id']);
+    // Nome curto: o automático passa dos 64 caracteres do MySQL com prefixos
+    // de tabela maiores que "flarum_". Com o prefixo, para não colidir no
+    // PostgreSQL, onde o nome do índice vale para o schema inteiro.
+    $table->unique(['tag_id', 'user_id', 'endorser_id'], $table->getPrefix().'tag_expert_endorsements_unique');
     // Limite diário por quem endossa.
     $table->index(['endorser_id', 'created_at']);
     $table->foreign('tag_id')->references('id')->on('tags')->cascadeOnDelete();
