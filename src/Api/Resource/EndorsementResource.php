@@ -21,6 +21,7 @@ use Flarum\Locale\TranslatorInterface;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\Tags\Tag;
 use Flarum\User\User;
+use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Database\Eloquent\Builder;
 use Ramon\TagExperts\ExpertResolver;
 use Ramon\TagExperts\TagExpertEndorsement;
@@ -38,7 +39,8 @@ class EndorsementResource extends AbstractDatabaseResource
     public function __construct(
         protected SettingsRepositoryInterface $settings,
         protected TranslatorInterface $translator,
-        protected ExpertResolver $resolver
+        protected ExpertResolver $resolver,
+        protected Cache $cache
     ) {
     }
 
@@ -125,7 +127,9 @@ class EndorsementResource extends AbstractDatabaseResource
             ->where('created_at', '>', Carbon::now()->subDay())
             ->count();
 
-        if ($today >= $perDay) {
+        // Desfazer um endosso não devolve a vaga do dia: senão endossar,
+        // desfazer e endossar de novo passaria do limite.
+        if (max($today, count($this->recentEndorsements((int) $model->endorser_id))) >= $perDay) {
             $fail('limit_reached', ['{max}' => $perDay]);
         }
 
@@ -139,16 +143,52 @@ class EndorsementResource extends AbstractDatabaseResource
         $count = TagExpertEndorsement::query()->where(['tag_id' => $model->tag_id, 'user_id' => $model->user_id])->count();
 
         // Uma sugestão por pessoa e tag: dispensada não volta sozinha.
-        if ($count >= $threshold && ! TagExpertSuggestion::query()->where(['tag_id' => $model->tag_id, 'user_id' => $model->user_id])->exists()) {
-            $suggestion = new TagExpertSuggestion();
-            $suggestion->tag_id = $model->tag_id;
-            $suggestion->user_id = $model->user_id;
-            $suggestion->status = TagExpertSuggestion::PENDING;
-            $suggestion->created_at = Carbon::now();
-            $suggestion->save();
+        // insertOrIgnore: dois endossos ao mesmo tempo não esbarram no índice único.
+        if ($count >= $threshold) {
+            TagExpertSuggestion::query()->insertOrIgnore([
+                'tag_id' => $model->tag_id,
+                'user_id' => $model->user_id,
+                'status' => TagExpertSuggestion::PENDING,
+                'created_at' => Carbon::now(),
+            ]);
         }
 
+        $key = $this->recentKey((int) $model->endorser_id);
+        $this->cache->put($key, [...$this->recentEndorsements((int) $model->endorser_id), Carbon::now()->getTimestamp()], 86400);
+
         return parent::created($model, $context);
+    }
+
+    public function delete(object $model, OriginalContext $context): void
+    {
+        /** @var TagExpertEndorsement $model */
+        parent::delete($model, $context);
+
+        // Sem endossos suficientes, a sugestão ainda não revisada sai da fila.
+        $threshold = max(1, (int) $this->settings->get('ramon-tag-experts.endorsement_threshold', 3));
+        $where = ['tag_id' => $model->tag_id, 'user_id' => $model->user_id];
+
+        if (TagExpertEndorsement::query()->where($where)->count() < $threshold) {
+            TagExpertSuggestion::query()->where($where)->where('status', TagExpertSuggestion::PENDING)->delete();
+        }
+    }
+
+    /**
+     * Horários dos endossos das últimas 24 horas, incluindo os desfeitos.
+     *
+     * @return list<int>
+     */
+    protected function recentEndorsements(int $endorserId): array
+    {
+        $since = Carbon::now()->subDay()->getTimestamp();
+        $times = $this->cache->get($this->recentKey($endorserId), []);
+
+        return array_values(array_filter(is_array($times) ? $times : [], fn ($time) => is_int($time) && $time > $since));
+    }
+
+    protected function recentKey(int $endorserId): string
+    {
+        return 'ramon-tag-experts.endorsed.'.$endorserId;
     }
 
     protected function isExpert(User $user, int $tagId): bool
