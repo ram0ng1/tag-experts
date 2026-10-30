@@ -16,6 +16,7 @@ import type Mithril from 'mithril';
 import type Tag from 'ext:flarum/tags/common/models/Tag';
 
 import EndorseModal from './components/EndorseModal';
+import addAvocadoBadges from './integrations/avocado';
 import { expertTags, t, tText } from '../common/utils/experts';
 
 export { default as extend } from './extend';
@@ -100,4 +101,6 @@ app.initializers.add('ramon-tag-experts', () => {
       label: t('forum.settings.notify_approved_label'),
     });
   });
+
+  addAvocadoBadges();
 });

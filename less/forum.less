@@ -20,6 +20,35 @@
   }
 }
 
+// O ramon/canela ordena o cabeçalho do post com `order` e empurra a data
+// para a direita com margem automática: o selo entra logo depois dos nomes
+// (e do título), e é ele quem empurra a data.
+.CanelaTopic .Post-header {
+  > ul > li.item-tagExpert {
+    order: 2;
+    margin-right: auto;
+  }
+
+  > ul > li.item-user:has(~ li.item-tagExpert),
+  > ul > li.item-canelaNames:has(~ li.item-tagExpert),
+  > ul > li.item-canelaUserTitle:has(~ li.item-tagExpert) {
+    margin-right: 0;
+  }
+}
+
+// No celular os nomes e o título empilham embaixo do avatar; o selo também.
+@media @phone {
+  .CanelaTopic .Post-header > ul > li.item-tagExpert {
+    order: 7;
+    flex-basis: 100%;
+    margin: 2px 0 0;
+  }
+
+  .CanelaTopic .Post-header > ul > li.item-user:has(~ li.item-tagExpert) {
+    margin-right: auto;
+  }
+}
+
 // Destaque discreto: só uma barra à esquerda, sem mexer no layout do post.
 .Post--tagExpert {
   box-shadow: inset 3px 0 0 var(--primary-color);
