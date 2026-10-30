@@ -26,7 +26,7 @@ class ExpertGroups
      * Grupos que nunca são de especialistas: Visitantes e Membros seriam todo
      * mundo, Admins e Mods dariam poder de equipe a quem for aprovado.
      */
-    public const INELIGIBLE = [Group::ADMINISTRATOR_ID, Group::GUEST_ID, Group::MEMBER_ID, Group::MODERATOR_ID];
+    public const INELIGIBLE = [Group::ADMINISTRATOR_ID, Group::GUEST_ID, Group::MEMBER_ID, Group::MODERATOR_ID]; /* lista de exclusão: não concede nada a Visitantes; nosemgrep: flarum-v2-guest-permission-grant */
 
     /** @var WeakMap<ServerRequestInterface, array<int, list<int>>> */
     private WeakMap $cache;

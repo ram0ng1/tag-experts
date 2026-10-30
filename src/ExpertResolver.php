@@ -18,6 +18,7 @@ use Flarum\Settings\SettingsRepositoryInterface;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use Ramon\TagExperts\Database\ColumnAggregate;
 
 /**
  * Quem é especialista onde, e qual a primeira resposta de especialista de
@@ -145,7 +146,7 @@ class ExpertResolver
             $first = $this->expertPosts()
                 ->whereIn('posts.discussion_id', $chunk)
                 ->groupBy('posts.discussion_id')
-                ->selectRaw($this->wrap('posts.discussion_id').' as discussion_id, min('.$this->wrap('posts.id').') as post_id')
+                ->select(['posts.discussion_id', new ColumnAggregate('min', 'posts.id', 'post_id')])
                 ->pluck('post_id', 'discussion_id');
 
             $numbers = Post::query()->whereIn('id', $first->values()->all())->pluck('number', 'id');
@@ -229,10 +230,5 @@ class ExpertResolver
     public function isExpertPost(Post $post): bool
     {
         return $this->expertPosts()->whereKey($post->id)->exists();
-    }
-
-    private function wrap(string $column): string
-    {
-        return $this->db->getQueryGrammar()->wrap($column);
     }
 }
