@@ -17,14 +17,18 @@ use Flarum\Discussion\Discussion;
 use Flarum\Discussion\Search\DiscussionSearcher;
 use Flarum\Extend;
 use Flarum\Gdpr\Extend\UserData;
+use Flarum\Group\Event\Deleting as GroupDeleting;
 use Flarum\Post\Event\Deleted;
 use Flarum\Post\Event\Hidden;
 use Flarum\Post\Event\Posted;
 use Flarum\Post\Event\Restored;
 use Flarum\Search\Database\DatabaseSearchDriver;
+use Flarum\Settings\Event\Saved as SettingsSaved;
 use Flarum\Tags\Api\Resource\TagResource;
+use Flarum\Tags\Event\Deleting as TagDeleting;
 use Flarum\Tags\Event\DiscussionWasTagged;
 use Flarum\Tags\Tag;
+use Flarum\User\Event\Deleting as UserDeleting;
 use Flarum\User\Event\GroupsChanged;
 
 return [
@@ -78,7 +82,11 @@ return [
         ->listen(Restored::class, Listener\UpdateExpertPost::class)
         ->listen(Deleted::class, Listener\UpdateExpertPost::class)
         ->listen(DiscussionWasTagged::class, Listener\UpdateExpertPost::class)
-        ->listen(GroupsChanged::class, Listener\RecalculateOnGroupsChanged::class),
+        ->listen(GroupsChanged::class, Listener\RecalculateOnGroupsChanged::class)
+        ->listen(TagDeleting::class, Listener\RecalculateOnRemoval::class)
+        ->listen(GroupDeleting::class, Listener\RecalculateOnRemoval::class)
+        ->listen(UserDeleting::class, Listener\RecalculateOnRemoval::class)
+        ->listen(SettingsSaved::class, Listener\RecalculateOnRemoval::class),
 
     (new Extend\Console())
         ->command(Console\RecalculateCommand::class),

@@ -30,6 +30,15 @@ class RecalculateOnGroupsChanged
 
     public function handle(GroupsChanged $event): void
     {
+        // Só interessa quando entrou ou saiu de um grupo de especialistas.
+        $old = array_map(fn ($group) => (int) $group->id, $event->oldGroups);
+        $new = $event->user->groups()->pluck('groups.id')->map(fn ($id) => (int) $id)->all();
+        $changed = array_merge(array_diff($old, $new), array_diff($new, $old));
+
+        if (! $changed || ! $this->resolver->expertGroupRows()->whereIn('tag_expert_groups.group_id', $changed)->exists()) {
+            return;
+        }
+
         $discussions = $this->resolver->discussionsOf((int) $event->user->id);
 
         if ($discussions) {
