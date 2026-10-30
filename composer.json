@@ -1,6 +1,6 @@
 {
     "name": "ramon/tag-experts",
-    "description": "Recognise members as experts in tags: endorsements, review, and highlighted expert replies.",
+    "description": "Recognise the users who know a tag best: expert groups per tag, highlighted expert replies, recommendations and a review queue.",
     "keywords": [
         "flarum",
         "tags",
@@ -53,8 +53,8 @@
             "title": "Tag Experts",
             "category": "feature",
             "icon": {
-                "name": "fas fa-user-graduate",
-                "backgroundColor": "#7c4dff",
+                "image": "icon.svg",
+                "backgroundColor": "#fff",
                 "color": "#fff"
             },
             "optional-dependencies": [
