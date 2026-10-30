@@ -1,4 +1,3 @@
-import app from 'flarum/admin/app';
 import Extend from 'flarum/common/extenders';
 import FieldSet from 'flarum/common/components/FieldSet';
 
