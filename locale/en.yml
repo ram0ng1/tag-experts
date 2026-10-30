@@ -1,0 +1,72 @@
+ramon-tag-experts:
+  admin:
+    edit_tag:
+      expert_groups_label: Expert Groups
+      expert_groups_help: Users in these groups are experts in this tag. Their posts get an expert badge, and discussions they reply to are marked as having an expert reply.
+      accepts_recommendations_label: Allow Expert Recommendations
+    permissions:
+      recommend_label: Recommend users as tag experts
+      review_label: Review expert suggestions
+    settings:
+      badge_style_label: Expert badge
+      badge_style_help: How the badge looks next to the username in posts.
+      badge_style_options:
+        label: Icon and text
+        icon: Icon only, with a tooltip
+      threshold_label: Recommendations needed for a suggestion
+      threshold_help: When a user receives this many recommendations in a tag, they show up in the expert suggestions for review.
+      per_day_label: Recommendations per user per day
+      first_post_counts_label: The first post of a discussion counts as an expert reply
+      suggestions_help: Moderators can also review suggestions on the forum, from the user menu.
+
+  forum:
+    post:
+      expert_badge: Expert
+      expert_tooltip: "Expert in {tags}"
+    discussion:
+      expert_reply_badge: Has an expert reply
+    user_controls:
+      recommend_button: Recommend as Expert
+    recommend_modal:
+      title: "Recommend {username}"
+      text: Which tags does this user know well? Recommendations are private. When enough users agree, the moderators review them.
+      no_tags: No tag accepts recommendations yet.
+      submit_button: => core.ref.save_changes
+      saved_message: Your recommendations have been saved.
+    header:
+      suggestions_button: Expert Suggestions
+    notifications:
+      approved_text: "You are now an expert in {tag}"
+    settings:
+      notify_approved_label: Someone makes me an expert in a tag
+
+  api:
+    not_accepting: This tag doesn't accept recommendations.
+    self: You can't recommend yourself.
+    already_expert: This user is already an expert in this tag.
+    already_recommended: You have already recommended this user in this tag.
+    limit_reached: "You can make up to {max} recommendations a day."
+    already_resolved: This suggestion has already been reviewed.
+    below_threshold: This user no longer has enough recommendations in this tag.
+    no_expert_group: Choose one of this tag's expert groups.
+
+  lib:
+    gambits:
+      expert_reply:
+        key: expert-reply
+    suggestions:
+      heading: Expert Suggestions
+      empty: No suggestions waiting for review.
+      recommendations: "{count, plural, one {# recommendation} other {# recommendations}}"
+      in_tag: "in {tag}"
+      group_label: "Group for {username}"
+      approve_button: Approve
+      dismiss_button: Dismiss
+      approved_message: "{username} is now an expert in {tag}."
+      dismissed_message: The suggestion has been dismissed.
+      no_group: Choose expert groups for this tag first.
+      load_more_button: => core.ref.load_more
+    gdpr:
+      export_description: The recommendations you made and received, and your expert suggestions.
+      anonymize_description: Your recommendations and expert suggestions are deleted.
+      delete_description: Your recommendations and expert suggestions are deleted.

@@ -1,0 +1,88 @@
+// Selo de especialista ao lado do nome, nas cores do tema (core, Canela e
+// Avocado definem --primary-color).
+.TagExpertBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+  vertical-align: middle;
+  color: var(--primary-color);
+  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+  cursor: default;
+
+  .fa-user-graduate {
+    font-size: 10px;
+  }
+
+  // Só o ícone: um círculo, como os selos de grupo.
+  &--icon {
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+  }
+}
+
+// O ramon/canela ordena o cabeçalho do post com `order` e empurra a data
+// para a direita com margem automática: o selo entra logo depois dos nomes
+// (e do título), e é ele quem empurra a data.
+.CanelaTopic .Post-header {
+  > ul > li.item-tagExpert {
+    order: 2;
+    margin-right: auto;
+  }
+
+  // Classe repetida: as regras do tema têm a mesma especificidade e vêm
+  // depois no CSS.
+  > ul > li.item-user.item-user:has(~ li.item-tagExpert),
+  > ul > li.item-canelaNames.item-canelaNames:has(~ li.item-tagExpert),
+  > ul > li.item-canelaUserTitle.item-canelaUserTitle:has(~ li.item-tagExpert) {
+    margin-right: 0;
+  }
+}
+
+// No celular os nomes e o título empilham embaixo do avatar; o selo também.
+@media @phone {
+  .CanelaTopic .Post-header > ul > li.item-tagExpert {
+    order: 7;
+    flex-basis: 100%;
+    margin: 2px 0 0;
+  }
+
+  .CanelaTopic .Post-header > ul > li.item-user.item-user:has(~ li.item-tagExpert) {
+    margin-right: auto;
+  }
+}
+
+// Destaque discreto: só uma barra à esquerda, sem mexer no layout do post.
+.Post--tagExpert {
+  box-shadow: inset 3px 0 0 var(--primary-color);
+}
+
+// Cartões do ramon/avocado: o círculo dos outros selos do tema.
+.AvocadoHome-badge--tagExpertReply {
+  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+  color: var(--primary-color);
+}
+
+.Badge--tagExpertReply {
+  --badge-bg: var(--primary-color);
+}
+
+
+@import 'common.less';
+
+.TagExpertSuggestionsPage-title {
+  margin-top: 0;
+}
+
+.TagExpertRecommendModal-tags .checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

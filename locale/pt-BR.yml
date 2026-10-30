@@ -1,0 +1,72 @@
+ramon-tag-experts:
+  admin:
+    edit_tag:
+      expert_groups_label: Grupos de Especialistas
+      expert_groups_help: Os usuários destes grupos são especialistas nesta tag. Os posts deles ganham um selo de especialista, e as discussões que eles respondem são marcadas como tendo resposta de especialista.
+      accepts_recommendations_label: Permitir Recomendações de Especialistas
+    permissions:
+      recommend_label: Recomendar usuários como especialistas em tags
+      review_label: Revisar sugestões de especialistas
+    settings:
+      badge_style_label: Selo de especialista
+      badge_style_help: Como o selo aparece ao lado do nome de usuário nos posts.
+      badge_style_options:
+        label: Ícone e texto
+        icon: Só o ícone, com dica ao passar o mouse
+      threshold_label: Recomendações necessárias para uma sugestão
+      threshold_help: Quando um usuário recebe esse número de recomendações numa tag, ele entra nas sugestões de especialistas para revisão.
+      per_day_label: Recomendações por usuário por dia
+      first_post_counts_label: O primeiro post da discussão conta como resposta de especialista
+      suggestions_help: A moderação também revisa as sugestões pelo fórum, no menu do usuário.
+
+  forum:
+    post:
+      expert_badge: Especialista
+      expert_tooltip: "Especialista em {tags}"
+    discussion:
+      expert_reply_badge: Tem resposta de especialista
+    user_controls:
+      recommend_button: Recomendar como Especialista
+    recommend_modal:
+      title: "Recomendar {username}"
+      text: Em quais tags este usuário entende do assunto? As recomendações são privadas. Quando usuários suficientes concordam, a moderação revisa.
+      no_tags: Nenhuma tag aceita recomendações ainda.
+      submit_button: => core.ref.save_changes
+      saved_message: Suas recomendações foram salvas.
+    header:
+      suggestions_button: Sugestões de Especialistas
+    notifications:
+      approved_text: "Agora você é especialista em {tag}"
+    settings:
+      notify_approved_label: Alguém me torna especialista em uma tag
+
+  api:
+    not_accepting: Esta tag não aceita recomendações.
+    self: Você não pode recomendar a si mesmo.
+    already_expert: Este usuário já é especialista nesta tag.
+    already_recommended: Você já recomendou este usuário nesta tag.
+    limit_reached: "Você pode fazer até {max} recomendações por dia."
+    already_resolved: Esta sugestão já foi revisada.
+    below_threshold: Este usuário não tem mais recomendações suficientes nesta tag.
+    no_expert_group: Escolha um dos grupos de especialistas desta tag.
+
+  lib:
+    gambits:
+      expert_reply:
+        key: resposta-especialista
+    suggestions:
+      heading: Sugestões de Especialistas
+      empty: Nenhuma sugestão aguardando revisão.
+      recommendations: "{count, plural, one {# recomendação} other {# recomendações}}"
+      in_tag: "em {tag}"
+      group_label: "Grupo para {username}"
+      approve_button: Aprovar
+      dismiss_button: Descartar
+      approved_message: "{username} agora é especialista em {tag}."
+      dismissed_message: A sugestão foi descartada.
+      no_group: Escolha antes os grupos de especialistas desta tag.
+      load_more_button: => core.ref.load_more
+    gdpr:
+      export_description: As recomendações que você fez e recebeu, e as suas sugestões de especialista.
+      anonymize_description: As suas recomendações e sugestões de especialista são excluídas.
+      delete_description: As suas recomendações e sugestões de especialista são excluídas.
