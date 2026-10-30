@@ -1,7 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Tag Experts">
+  <!-- Paleta do ramon/avocado: #89BA4F (folha) sobre #337D63 (verde profundo), no fundo branco. -->
   <rect width="32" height="32" fill="#fff"/>
-  <path d="M8.5 15.6v5.1c0 2.3 3.4 4.1 7.5 4.1s7.5-1.8 7.5-4.1v-5.1L16 19.3z" fill="#5b35d6"/>
-  <path d="M16 6.2l13 6.3-13 6.3-13-6.3z" fill="#7c4dff"/>
-  <path d="M26.6 13.4v6.4" stroke="#7c4dff" stroke-width="1.6" stroke-linecap="round"/>
-  <circle cx="26.6" cy="21.1" r="1.6" fill="#7c4dff"/>
+  <path d="M8.5 15.6v5.1c0 2.3 3.4 4.1 7.5 4.1s7.5-1.8 7.5-4.1v-5.1L16 19.3z" fill="#337D63"/>
+  <path d="M16 6.2l13 6.3-13 6.3-13-6.3z" fill="#89BA4F"/>
+  <path d="M26.6 13.4v6.4" stroke="#337D63" stroke-width="1.6" stroke-linecap="round"/>
+  <circle cx="26.6" cy="21.1" r="1.6" fill="#337D63"/>
 </svg>
