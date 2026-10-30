@@ -27,6 +27,11 @@ class SuggestionTest extends TagExpertsTestCase
             ['id' => 1, 'tag_id' => 1, 'user_id' => 5, 'status' => 'pending', 'created_at' => Carbon::now()],
             ['id' => 2, 'tag_id' => 1, 'user_id' => 6, 'status' => 'dismissed', 'created_at' => Carbon::now()->subDay()],
         ]]);
+        // As três recomendações que levaram à sugestão 1 (o limiar padrão).
+        $this->prepareDatabase(['tag_expert_endorsements' => array_map(
+            fn (int $endorser) => ['tag_id' => 1, 'user_id' => 5, 'endorser_id' => $endorser, 'created_at' => Carbon::now()],
+            [2, 6, 7]
+        )]);
     }
 
     private function resolve(int $actor, string $status, ?int $groupId = null): \Psr\Http\Message\ResponseInterface

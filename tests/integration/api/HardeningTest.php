@@ -178,4 +178,67 @@ class HardeningTest extends TagExpertsTestCase
         $make(4)->anonymize();
         $this->assertNull($this->database()->table('tag_expert_suggestions')->value('resolved_by_id'));
     }
+
+    public function test_grupo_que_fica_oculto_deixa_de_contar_e_volta_ao_aparecer(): void
+    {
+        $this->reply(3, 1);
+        $hide = fn (bool $hidden) => $this->send($this->request('PATCH', '/api/groups/'.self::EXPERT_GROUP, [
+            'authenticatedAs' => 1,
+            'json' => ['data' => ['type' => 'groups', 'id' => (string) self::EXPERT_GROUP, 'attributes' => ['nameSingular' => 'Especialista', 'namePlural' => 'Especialistas', 'isHidden' => $hidden]]],
+        ]));
+
+        $response = $hide(true);
+        $this->assertEquals(200, $response->getStatusCode(), (string) $response->getBody());
+        $this->assertNull($this->expertPostNumber(1));
+
+        $hide(false);
+        $this->assertSame(2, $this->expertPostNumber(1));
+    }
+
+    public function test_salvar_a_tag_guarda_o_grupo_oculto(): void
+    {
+        $this->prepareDatabase(['tag_expert_groups' => [['tag_id' => 1, 'group_id' => self::HIDDEN_GROUP]]]);
+
+        $this->send($this->request('PATCH', '/api/tags/1', [
+            'authenticatedAs' => 1,
+            'json' => ['data' => ['type' => 'tags', 'id' => '1', 'attributes' => ['name' => 'PHP 8', 'expertGroupIds' => [self::EXPERT_GROUP]]]],
+        ]));
+
+        $this->assertSame([self::EXPERT_GROUP, self::HIDDEN_GROUP], $this->groupsOfTag(1));
+    }
+
+    public function test_aprovar_confere_o_limiar_de_novo(): void
+    {
+        // Sugestão que ficou sem recomendações (excluídas pelo GDPR, por exemplo).
+        $this->pendingSuggestion();
+
+        $this->assertEquals(422, $this->approve(4, self::EXPERT_GROUP)->getStatusCode());
+        $this->assertFalse($this->database()->table('group_user')->where(['user_id' => 5, 'group_id' => self::EXPERT_GROUP])->exists());
+    }
+
+    public function test_limpar_o_cache_nao_devolve_a_vaga_do_dia(): void
+    {
+        $this->setting('ramon-tag-experts.endorsements_per_day', 1);
+        $id = $this->json($this->endorse(2, 5, 1))['data']['id'];
+        $this->send($this->request('DELETE', '/api/tag-expert-endorsements/'.$id, ['authenticatedAs' => 2]));
+
+        $this->app()->getContainer()->make('cache.store')->flush();
+
+        $this->assertEquals(422, $this->endorse(2, 6, 1)->getStatusCode());
+    }
+
+    public function test_conta_apagada_pelo_gdpr_recalcula(): void
+    {
+        $this->extension('flarum-gdpr');
+        $this->reply(3, 1);
+        $this->assertSame(2, $this->expertPostNumber(1));
+
+        // O flarum/gdpr exclui os posts em massa e depois avisa com Erased.
+        $this->database()->table('posts')->where('user_id', 3)->delete();
+        $this->app()->getContainer()->make(\Illuminate\Contracts\Events\Dispatcher::class)->dispatch(
+            new \Flarum\Gdpr\Events\Erased('especialista', 'especialista@machine.local', 'deletion', User::query()->find(3))
+        );
+
+        $this->assertNull($this->expertPostNumber(1));
+    }
 }
