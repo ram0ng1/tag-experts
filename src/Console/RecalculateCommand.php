@@ -36,18 +36,13 @@ class RecalculateCommand extends AbstractCommand
 
     protected function fire(): int
     {
-        $tagIds = array_map('intval', array_keys($this->resolver->expertGroupsByTag($this->allTags())));
-        $discussions = $tagIds ? $this->resolver->discussionsInTags($tagIds) : [];
+        // Também as já marcadas: um grupo que deixou de valer (oculto, excluído)
+        // precisa ter as marcas retiradas.
+        $discussions = $this->resolver->discussionsToCheck();
 
         $this->resolver->recalculate($discussions);
         $this->info('Discussions recalculated: '.count($discussions).'.');
 
         return 0;
-    }
-
-    /** @return list<int> */
-    private function allTags(): array
-    {
-        return \Flarum\Tags\Tag::query()->pluck('id')->map(fn ($id) => (int) $id)->all();
     }
 }

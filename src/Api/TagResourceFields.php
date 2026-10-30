@@ -67,7 +67,12 @@ class TagResourceFields
                         ->all();
 
                     $tag->afterSave(function (Tag $tag) use ($ids) {
-                        $this->db->table('tag_expert_groups')->where('tag_id', $tag->id)->delete();
+                        // Só troca os grupos que o admin vê no modal: a escolha de um
+                        // grupo oculto agora (e que volte a ser visível) fica guardada.
+                        $this->db->table('tag_expert_groups')
+                            ->where('tag_id', $tag->id)
+                            ->whereIn('group_id', fn ($query) => $query->select('id')->from('groups')->where('is_hidden', false)->whereNotIn('id', ExpertGroups::INELIGIBLE))
+                            ->delete();
                         $this->db->table('tag_expert_groups')->insert(array_map(fn ($id) => ['tag_id' => $tag->id, 'group_id' => $id], $ids));
 
                         $discussions = $this->resolver->discussionsInTags([(int) $tag->id]);

@@ -79,6 +79,47 @@ class ExpertResolver
     }
 
     /**
+     * Discussões que têm ou podem ter resposta de especialista: as das tags
+     * com grupos (mesmo os que não valem agora) e as já marcadas.
+     *
+     * @return list<int>
+     */
+    public function discussionsToCheck(): array
+    {
+        $marked = Discussion::query()->whereNotNull('expert_post_number')->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+        return array_values(array_unique([...$this->discussionsWithExperts(), ...$marked]));
+    }
+
+    /**
+     * Discussões das tags em que um grupo foi escolhido, valendo ou não.
+     *
+     * @return list<int>
+     */
+    public function discussionsOfGroup(int $groupId): array
+    {
+        return $this->discussionsInTags($this->db->table('tag_expert_groups')->where('group_id', $groupId)->pluck('tag_id')->map(fn ($id) => (int) $id)->all());
+    }
+
+    /**
+     * Discussões marcadas cujo post de especialista já não existe (excluído
+     * em massa, como faz o flarum/gdpr).
+     *
+     * @return list<int>
+     */
+    public function discussionsWithMissingExpertPost(): array
+    {
+        return Discussion::query()
+            ->whereNotNull('expert_post_number')
+            ->where(fn (Builder $query) => $query
+                ->whereNull('expert_post_id')
+                ->orWhereNotIn('expert_post_id', fn ($sub) => $sub->select('id')->from('posts')))
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+    }
+
+    /**
      * Discussões cuja resposta de especialista é de alguém: as que mudam
      * quando a pessoa sai.
      *

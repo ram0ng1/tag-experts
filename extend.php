@@ -18,6 +18,7 @@ use Flarum\Discussion\Search\DiscussionSearcher;
 use Flarum\Extend;
 use Flarum\Gdpr\Extend\UserData;
 use Flarum\Group\Event\Deleting as GroupDeleting;
+use Flarum\Group\Event\Saving as GroupSaving;
 use Flarum\Post\Event\Deleted;
 use Flarum\Post\Event\Hidden;
 use Flarum\Post\Event\Posted;
@@ -88,6 +89,7 @@ return [
         ->listen(GroupsChanged::class, Listener\RecalculateOnGroupsChanged::class)
         ->listen(TagDeleting::class, Listener\RecalculateOnRemoval::class)
         ->listen(GroupDeleting::class, Listener\RecalculateOnRemoval::class)
+        ->listen(GroupSaving::class, Listener\RecalculateOnRemoval::class)
         ->listen(UserDeleting::class, Listener\RecalculateOnRemoval::class)
         ->listen(SettingsSaved::class, Listener\RecalculateOnRemoval::class),
 
@@ -103,5 +105,7 @@ return [
         ->whenExtensionEnabled('flarum-gdpr', fn () => [
             (new UserData())
                 ->addType(Data\Endorsements::class),
+            (new Extend\Event())
+                ->listen(\Flarum\Gdpr\Events\Erased::class, Listener\RecalculateOnRemoval::class),
         ]),
 ];

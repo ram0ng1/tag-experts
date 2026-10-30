@@ -12,7 +12,9 @@
 namespace Ramon\TagExperts\Listener;
 
 use Flarum\Database\AbstractModel;
+use Flarum\Gdpr\Events\Erased;
 use Flarum\Group\Event\Deleting as GroupDeleting;
+use Flarum\Group\Event\Saving as GroupSaving;
 use Flarum\Settings\Event\Saved as SettingsSaved;
 use Flarum\Tags\Event\Deleting as TagDeleting;
 use Flarum\User\Event\Deleting as UserDeleting;
@@ -22,7 +24,8 @@ use Ramon\TagExperts\Job\RecalculateExpertPosts;
 
 /**
  * O que tira um especialista de cena sem passar pelos posts: tag, grupo ou
- * pessoa excluídos, e a opção do primeiro post. As discussões afetadas são
+ * pessoa excluídos, grupo que fica oculto, conta apagada pelo flarum/gdpr e
+ * a opção do primeiro post. As discussões afetadas são
  * lidas antes da exclusão (depois as ligações já sumiram) e recalculadas
  * depois dela.
  */
@@ -42,6 +45,12 @@ class RecalculateOnRemoval
                 $this->resolver->expertGroupRows()->where('tag_expert_groups.group_id', $event->group->id)->pluck('tag_expert_groups.tag_id')->map(fn ($id) => (int) $id)->all()
             )),
             $event instanceof UserDeleting => $this->afterDelete($event->user, $this->resolver->discussionsAnsweredBy((int) $event->user->id)),
+            // Grupo que fica oculto (ou volta a aparecer) muda quem conta.
+            $event instanceof GroupSaving => $event->group->exists && $event->group->isDirty('is_hidden')
+                ? $this->afterSave($event->group, $this->resolver->discussionsOfGroup((int) $event->group->id))
+                : null,
+            // O flarum/gdpr exclui os posts em massa, sem eventos de post.
+            $event instanceof Erased => $this->dispatch($this->resolver->discussionsWithMissingExpertPost()),
             $event instanceof SettingsSaved => array_key_exists('ramon-tag-experts.first_post_counts', $event->settings)
                 ? $this->dispatch($this->resolver->discussionsWithExperts())
                 : null,
@@ -56,6 +65,16 @@ class RecalculateOnRemoval
     {
         if ($discussions) {
             $model->afterDelete(fn () => $this->dispatch($discussions));
+        }
+    }
+
+    /**
+     * @param list<int> $discussions
+     */
+    protected function afterSave(AbstractModel $model, array $discussions): void
+    {
+        if ($discussions) {
+            $model->afterSave(fn () => $this->dispatch($discussions));
         }
     }
 
