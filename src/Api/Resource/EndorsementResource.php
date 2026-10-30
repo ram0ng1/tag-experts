@@ -21,7 +21,7 @@ use Flarum\Locale\TranslatorInterface;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\Tags\Tag;
 use Flarum\User\User;
-use Illuminate\Contracts\Cache\Repository as Cache;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Ramon\TagExperts\ExpertResolver;
 use Ramon\TagExperts\TagExpertEndorsement;
@@ -40,7 +40,7 @@ class EndorsementResource extends AbstractDatabaseResource
         protected SettingsRepositoryInterface $settings,
         protected TranslatorInterface $translator,
         protected ExpertResolver $resolver,
-        protected Cache $cache
+        protected ConnectionInterface $db
     ) {
     }
 
@@ -128,8 +128,14 @@ class EndorsementResource extends AbstractDatabaseResource
             ->count();
 
         // Desfazer uma recomendação não devolve a vaga do dia: senão recomendar,
-        // desfazer e recomendar de novo passaria do limite.
-        if (max($today, count($this->recentEndorsements((int) $model->endorser_id))) >= $perDay) {
+        // desfazer e recomendar de novo passaria do limite. O registro fica numa
+        // tabela própria (o cache pode ser limpo a qualquer momento).
+        $logged = $this->db->table('tag_expert_recommendation_log')
+            ->where('user_id', $model->endorser_id)
+            ->where('created_at', '>', Carbon::now()->subDay())
+            ->count();
+
+        if (max($today, $logged) >= $perDay) {
             $fail('limit_reached', ['{max}' => $perDay]);
         }
 
@@ -153,8 +159,9 @@ class EndorsementResource extends AbstractDatabaseResource
             ]);
         }
 
-        $key = $this->recentKey((int) $model->endorser_id);
-        $this->cache->put($key, [...$this->recentEndorsements((int) $model->endorser_id), Carbon::now()->getTimestamp()], 86400);
+        // O que passou de um dia não conta mais: sai da tabela.
+        $this->db->table('tag_expert_recommendation_log')->where('user_id', $model->endorser_id)->where('created_at', '<=', Carbon::now()->subDay())->delete();
+        $this->db->table('tag_expert_recommendation_log')->insert(['user_id' => $model->endorser_id, 'created_at' => Carbon::now()]);
 
         return parent::created($model, $context);
     }
@@ -173,23 +180,6 @@ class EndorsementResource extends AbstractDatabaseResource
         }
     }
 
-    /**
-     * Horários das recomendações das últimas 24 horas, incluindo as desfeitas.
-     *
-     * @return list<int>
-     */
-    protected function recentEndorsements(int $endorserId): array
-    {
-        $since = Carbon::now()->subDay()->getTimestamp();
-        $times = $this->cache->get($this->recentKey($endorserId), []);
-
-        return array_values(array_filter(is_array($times) ? $times : [], fn ($time) => is_int($time) && $time > $since));
-    }
-
-    protected function recentKey(int $endorserId): string
-    {
-        return 'ramon-tag-experts.endorsed.'.$endorserId;
-    }
 
     protected function isExpert(User $user, int $tagId): bool
     {

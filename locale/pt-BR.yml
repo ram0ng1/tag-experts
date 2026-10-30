@@ -47,6 +47,7 @@ ramon-tag-experts:
     already_recommended: Você já recomendou este usuário nesta tag.
     limit_reached: "Você pode fazer até {max} recomendações por dia."
     already_resolved: Esta sugestão já foi revisada.
+    below_threshold: Este usuário não tem mais recomendações suficientes nesta tag.
     no_expert_group: Escolha um dos grupos de especialistas desta tag.
 
   lib:

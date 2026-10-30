@@ -20,6 +20,7 @@ use Flarum\Api\Sort\SortColumn;
 use Flarum\Foundation\ValidationException;
 use Flarum\Locale\TranslatorInterface;
 use Flarum\Notification\NotificationSyncer;
+use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\Tags\Tag;
 use Flarum\User\Event\GroupsChanged;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -40,6 +41,7 @@ class SuggestionResource extends AbstractDatabaseResource
 {
     public function __construct(
         protected TranslatorInterface $translator,
+        protected SettingsRepositoryInterface $settings,
         protected ExpertResolver $resolver,
         protected NotificationSyncer $notifications,
         protected Dispatcher $events
@@ -139,6 +141,13 @@ class SuggestionResource extends AbstractDatabaseResource
 
             if (! is_int($group) || ! in_array($group, $groups, true)) {
                 throw new ValidationException(['groupId' => $this->translator->trans('ramon-tag-experts.api.no_expert_group')]);
+            }
+
+            // Recomendações excluídas por outro caminho (GDPR, conta excluída)
+            // podem ter deixado a sugestão abaixo do limiar.
+            $threshold = max(1, (int) $this->settings->get('ramon-tag-experts.endorsement_threshold', 3));
+            if (TagExpertEndorsement::query()->where(['tag_id' => $model->tag_id, 'user_id' => $model->user_id])->count() < $threshold) {
+                throw new ValidationException(['status' => $this->translator->trans('ramon-tag-experts.api.below_threshold')]);
             }
 
             $model->afterSave(function (TagExpertSuggestion $suggestion) use ($group, $context) {

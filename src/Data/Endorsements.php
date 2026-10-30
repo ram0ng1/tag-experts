@@ -79,6 +79,7 @@ class Endorsements extends Type
     public function delete(): void
     {
         TagExpertEndorsement::query()->where('endorser_id', $this->user->id)->orWhere('user_id', $this->user->id)->delete();
+        TagExpertSuggestion::query()->getConnection()->table('tag_expert_recommendation_log')->where('user_id', $this->user->id)->delete();
         TagExpertSuggestion::query()->where('user_id', $this->user->id)->delete();
         // Quem revisou deixa de constar nas sugestões dos outros.
         TagExpertSuggestion::query()->where('resolved_by_id', $this->user->id)->update(['resolved_by_id' => null]);
