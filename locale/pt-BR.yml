@@ -1,0 +1,66 @@
+ramon-tag-experts:
+  admin:
+    edit_tag:
+      expert_groups_label: Grupos de especialistas
+      expert_groups_help: Os membros destes grupos são especialistas nesta tag. As respostas deles ganham destaque e as discussões que eles respondem ganham um selo.
+      accepts_endorsements_label: Membros podem endossar especialistas nesta tag
+    permissions:
+      endorse_label: Endossar membros como especialistas em tags
+      review_label: Revisar sugestões de especialistas
+    settings:
+      threshold_label: Endossos para virar sugestão
+      threshold_help: Quando um membro recebe esse número de endossos numa tag, ele entra nas sugestões de especialistas para revisão.
+      per_day_label: Endossos por membro por dia
+      first_post_counts_label: O primeiro post da discussão conta como resposta de especialista
+      suggestions_help: A moderação também revisa as sugestões pelo fórum, no menu do usuário.
+
+  forum:
+    post:
+      expert_badge: Especialista
+      expert_tooltip: "Especialista em {tags}"
+    discussion:
+      expert_reply_badge: Tem resposta de especialista
+    user_controls:
+      endorse_button: Endossar como especialista
+    endorse_modal:
+      title: "Endossar {username}"
+      text: Em quais tags este membro manda bem? Os endossos são privados. Quando membros suficientes concordam, a moderação revisa.
+      no_tags: Nenhuma tag aceita endossos ainda.
+      submit: Salvar
+      saved: Endossos salvos.
+    header:
+      suggestions_button: Sugestões de especialistas
+    notifications:
+      approved_text: "Agora você é especialista em {tag}"
+    settings:
+      notify_approved_label: Viro especialista numa tag
+
+  api:
+    not_accepting: Esta tag não aceita endossos.
+    self: Você não pode endossar a si mesmo.
+    already_expert: Este membro já é especialista nesta tag.
+    already_endorsed: Você já endossou este membro nesta tag.
+    limit_reached: "Você pode endossar até {max} vezes por dia."
+    already_resolved: Esta sugestão já foi revisada.
+    no_expert_group: Escolha um dos grupos de especialistas desta tag.
+
+  lib:
+    gambits:
+      expert_reply:
+        key: resposta-especialista
+    suggestions:
+      heading: Sugestões de especialistas
+      empty: Nenhuma sugestão esperando revisão.
+      endorsements: "{count, plural, one {# endosso} other {# endossos}}"
+      in_tag: "em {tag}"
+      group_label: "Grupo para {username}"
+      approve: Aprovar
+      dismiss: Dispensar
+      approved: "{username} agora é especialista em {tag}."
+      dismissed: Sugestão dispensada.
+      no_group: Escolha antes os grupos de especialistas desta tag.
+      load_more: Carregar mais
+    gdpr:
+      export_description: Os endossos que você deu e recebeu.
+      anonymize_description: Os seus endossos e sugestões de especialista são apagados.
+      delete_description: Os seus endossos e sugestões de especialista são apagados.
