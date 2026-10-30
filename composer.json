@@ -5,7 +5,7 @@
         "flarum",
         "tags",
         "experts",
-        "endorsements",
+        "recommendations",
         "reputation"
     ],
     "type": "flarum-extension",
