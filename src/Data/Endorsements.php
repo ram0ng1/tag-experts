@@ -49,7 +49,26 @@ class Endorsements extends Type
             ])
             ->all();
 
-        return $rows ? [['tag-experts/endorsements.json' => $this->encodeForExport($rows)]] : null;
+        $suggestions = TagExpertSuggestion::query()
+            ->where('user_id', $this->user->id)
+            ->orderBy('id')
+            ->get()
+            ->map(fn (TagExpertSuggestion $s) => [
+                'tag_id' => $s->tag_id,
+                'status' => $s->status,
+                'created_at' => $s->created_at->toIso8601String(),
+            ])
+            ->all();
+
+        $files = [];
+        if ($rows) {
+            $files[] = ['tag-experts/endorsements.json' => $this->encodeForExport($rows)];
+        }
+        if ($suggestions) {
+            $files[] = ['tag-experts/suggestions.json' => $this->encodeForExport($suggestions)];
+        }
+
+        return $files ?: null;
     }
 
     public function anonymize(): void
@@ -61,5 +80,7 @@ class Endorsements extends Type
     {
         TagExpertEndorsement::query()->where('endorser_id', $this->user->id)->orWhere('user_id', $this->user->id)->delete();
         TagExpertSuggestion::query()->where('user_id', $this->user->id)->delete();
+        // Quem revisou deixa de constar nas sugestões dos outros.
+        TagExpertSuggestion::query()->where('resolved_by_id', $this->user->id)->update(['resolved_by_id' => null]);
     }
 }
